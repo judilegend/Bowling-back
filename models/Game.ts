@@ -1,23 +1,23 @@
 import mongoose, { Schema, Document } from "mongoose";
 
 interface IFrame {
-  rolls: number[];
-  score: number;
-  isStrike: boolean;
+  lancers: number[];
+  scoreFrame: number;
+  isFrame: boolean;
   isSpare: boolean;
 }
 
 export interface IGame extends Document {
   playerName: string;
   frames: IFrame[];
-  totalScore: number;
+  scoreTotal: number;
   date: Date;
 }
 
 const FrameSchema = new Schema({
-  rolls: [Number],
-  score: Number,
-  isStrike: Boolean,
+  lancers: [Number],
+  scoreFrame: Number,
+  isFrame: Boolean,
   isSpare: Boolean,
 });
 
@@ -25,24 +25,24 @@ const GameSchema = new Schema({
   playerName: { type: String, required: true },
   frames: [
     {
-      rolls: {
+      lancers: {
         type: [Number],
         validate: {
-          validator: function (rolls: number[]) {
-            return rolls.every((roll) => roll >= 0 && roll <= 15);
+          validator: function (lancers: number[]) {
+            return lancers.every((quilles) => quilles >= 0 && quilles <= 15);
           },
-          message: "Each roll must be between 0 and 15 pins",
+          message: "Chaque lancer doit abattre entre 0 et 15 quilles",
         },
       },
-      score: Number,
-      isStrike: Boolean,
+      scoreFrame: Number,
+      isFrame: Boolean,
       isSpare: Boolean,
     },
   ],
-  totalScore: {
+  scoreTotal: {
     type: Number,
     default: 0,
-    max: 300, // Maximum possible score
+    max: 300,
   },
   date: { type: Date, default: Date.now },
 });

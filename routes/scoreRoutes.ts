@@ -1,12 +1,12 @@
 import express from "express";
-import { calculateScore, getGameHistory } from "../controller/scoreController";
+import { calculerScore, getGameHistory } from "../controller/scoreController";
 
 const router = express.Router();
 
-// Calculate score for a new game
-router.post("/calculate", calculateScore);
+// Calcul du score pour une nouvelle partie
+router.post("/calcul", calculerScore);
 
-// Retrieve game history
-router.get("/history", getGameHistory);
+// Récupération de l'historique des parties
+router.get("/historique", getGameHistory);
 
 export default router;
