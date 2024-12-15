@@ -17,8 +17,8 @@ Jest
 📦 Installation
 Cloner le dépôt :
 
-git clone https://github.com/yourusername/bowling-game-backend.git  
-cd bowling-game-backend  
+git clone https://github.com/judilegend/Bowlign-back.git
+cd Bowling-back  
 Installer les dépendances :
 
 npm install  
