@@ -70,12 +70,22 @@ export const calculerScore = async (
   try {
     const { playerName, frames } = req.body;
 
-    if (!playerName || !frames || frames.length !== TOTAL_FRAMES) {
+    if (!playerName || !Array.isArray(frames)) {
       res.status(400).json({
-        message: `Entrée invalide: Nom du joueur et exactement ${TOTAL_FRAMES} frames requis`,
+        message: "Données invalides",
       });
       return;
     }
+    frames.forEach((frame, index) => {
+      if (
+        !Array.isArray(frame) ||
+        frame.some((pins) => pins < 0 || pins > PINS_PER_FRAME)
+      ) {
+        throw new Error(
+          `Nombre de quilles invalide dans la frame ${index + 1}`
+        );
+      }
+    });
 
     const isAllStrikes = frames.every(
       (frame: any) => frame[0] === PINS_PER_FRAME
