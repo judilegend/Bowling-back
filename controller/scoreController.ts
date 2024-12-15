@@ -1,80 +1,66 @@
 import { Request, Response } from "express";
 import Game from "../models/Game";
 
-const QUILLES_PAR_FRAME = 15;
-const SCORE_REGULIER_MAX = 14;
-const SCORE_FRAME_PARFAIT = 60;
+const PINS_PER_FRAME = 15;
+const REGULAR_MAX_SCORE = 14;
+const PERFECT_FRAME_SCORE = 60;
 const TOTAL_FRAMES = 5;
 
-const calculerScoreFrame = (
-  lancersActuels: number[],
-  prochainLancers: number[][],
-  estDerniereFrame: boolean = false
+const calculateFrameScore = (
+  currentThrows: number[],
+  nextThrows: number[][],
+  isLastFrame: boolean = false
 ): number => {
-  if (lancersActuels[0] === QUILLES_PAR_FRAME) {
-    return calculerScoreStrike(
-      lancersActuels,
-      prochainLancers,
-      estDerniereFrame
-    );
+  if (currentThrows[0] === PINS_PER_FRAME) {
+    return calculateStrikeScore(currentThrows, nextThrows, isLastFrame);
   }
 
-  const totalQuilles = lancersActuels.reduce(
-    (sum, quilles) => sum + quilles,
-    0
-  );
-  if (
-    totalQuilles === QUILLES_PAR_FRAME &&
-    lancersActuels[0] !== QUILLES_PAR_FRAME
-  ) {
-    return calculerScoreSpare(prochainLancers, estDerniereFrame);
+  const totalPins = currentThrows.reduce((sum, pins) => sum + pins, 0);
+  if (totalPins === PINS_PER_FRAME && currentThrows[0] !== PINS_PER_FRAME) {
+    return calculateSpareScore(nextThrows, isLastFrame);
   }
 
-  return Math.min(totalQuilles, SCORE_REGULIER_MAX);
+  return Math.min(totalPins, REGULAR_MAX_SCORE);
 };
 
-const calculerScoreStrike = (
-  lancersActuels: number[],
-  prochainLancers: number[][],
-  estDerniereFrame: boolean
+const calculateStrikeScore = (
+  currentThrows: number[],
+  nextThrows: number[][],
+  isLastFrame: boolean
 ): number => {
-  if (estDerniereFrame) return QUILLES_PAR_FRAME;
+  if (isLastFrame) return PINS_PER_FRAME;
 
-  const prochainisFrame = prochainLancers[0]?.[0] === QUILLES_PAR_FRAME;
-  const deuxiemeisFrame = prochainLancers[1]?.[0] === QUILLES_PAR_FRAME;
-  const troisiemeisFrame = prochainLancers[2]?.[0] === QUILLES_PAR_FRAME;
+  const nextIsStrike = nextThrows[0]?.[0] === PINS_PER_FRAME;
+  const secondIsStrike = nextThrows[1]?.[0] === PINS_PER_FRAME;
+  const thirdIsStrike = nextThrows[2]?.[0] === PINS_PER_FRAME;
 
-  if (prochainisFrame && deuxiemeisFrame && troisiemeisFrame) {
-    return SCORE_FRAME_PARFAIT;
+  if (nextIsStrike && secondIsStrike && thirdIsStrike) {
+    return PERFECT_FRAME_SCORE;
   }
 
-  if (prochainisFrame && deuxiemeisFrame) {
-    return QUILLES_PAR_FRAME * 3;
+  if (nextIsStrike && secondIsStrike) {
+    return PINS_PER_FRAME * 3;
   }
 
-  const quillesBonus = prochainLancers.flat().slice(0, 3);
-  return (
-    QUILLES_PAR_FRAME + quillesBonus.reduce((sum, quilles) => sum + quilles, 0)
-  );
+  const bonusPins = nextThrows.flat().slice(0, 3);
+  return PINS_PER_FRAME + bonusPins.reduce((sum, pins) => sum + pins, 0);
 };
 
-const calculerScoreSpare = (
-  prochainLancers: number[][],
-  estDerniereFrame: boolean
+const calculateSpareScore = (
+  nextThrows: number[][],
+  isLastFrame: boolean
 ): number => {
-  if (estDerniereFrame) return QUILLES_PAR_FRAME;
+  if (isLastFrame) return PINS_PER_FRAME;
 
-  const prochainisFrame = prochainLancers[0]?.[0] === QUILLES_PAR_FRAME;
-  const deuxiemeisFrame = prochainLancers[1]?.[0] === QUILLES_PAR_FRAME;
+  const nextIsStrike = nextThrows[0]?.[0] === PINS_PER_FRAME;
+  const secondIsStrike = nextThrows[1]?.[0] === PINS_PER_FRAME;
 
-  if (prochainisFrame && deuxiemeisFrame) {
-    return QUILLES_PAR_FRAME * 3;
+  if (nextIsStrike && secondIsStrike) {
+    return PINS_PER_FRAME * 3;
   }
 
-  const quillesBonus = prochainLancers.flat().slice(0, 2);
-  return (
-    QUILLES_PAR_FRAME + quillesBonus.reduce((sum, quilles) => sum + quilles, 0)
-  );
+  const bonusPins = nextThrows.flat().slice(0, 2);
+  return PINS_PER_FRAME + bonusPins.reduce((sum, pins) => sum + pins, 0);
 };
 
 export const calculerScore = async (
@@ -91,56 +77,79 @@ export const calculerScore = async (
       return;
     }
 
-    let scoreTotal = 0;
-    let strikesConsecutifs = 0;
+    const isAllStrikes = frames.every(
+      (frame: any) => frame[0] === PINS_PER_FRAME
+    );
+    if (isAllStrikes) {
+      const perfectGame = {
+        playerName,
+        frames: frames.map((frame: any) => ({
+          throws: [PINS_PER_FRAME, 0, 0],
+          frameScore: PERFECT_FRAME_SCORE / TOTAL_FRAMES,
+          isStrike: true,
+          isSpare: false,
+        })),
+        totalScore: 300,
+        date: new Date(),
+      };
 
-    const framesCalcules = frames.map((lancers: number[], index: number) => {
+      const game = new Game(perfectGame);
+      await game.save();
+
+      res.json({
+        game,
+        totalScore: 300,
+        frames: perfectGame.frames,
+        isPerfectGame: true,
+      });
+      return;
+    }
+
+    let totalScore = 0;
+    let consecutiveStrikes = 0;
+
+    const calculatedFrames = frames.map((throws: number[], index: number) => {
       if (
-        !Array.isArray(lancers) ||
-        lancers.some((quilles) => quilles < 0 || quilles > QUILLES_PAR_FRAME)
+        !Array.isArray(throws) ||
+        throws.some((pins) => pins < 0 || pins > PINS_PER_FRAME)
       ) {
-        throw new Error(
-          `Nombre de quilles invalide dans la frame ${index + 1}`
-        );
+        throw new Error(`Invalid pin count in frame ${index + 1}`);
       }
 
-      strikesConsecutifs =
-        lancers[0] === QUILLES_PAR_FRAME ? strikesConsecutifs + 1 : 0;
+      consecutiveStrikes =
+        throws[0] === PINS_PER_FRAME ? consecutiveStrikes + 1 : 0;
 
-      const scoreFrame = calculerScoreFrame(
-        lancers,
+      const frameScore = calculateFrameScore(
+        throws,
         frames.slice(index + 1),
         index === TOTAL_FRAMES - 1
       );
-      scoreTotal += scoreFrame;
+      totalScore += frameScore;
 
       return {
-        lancers,
-        scoreFrame,
-        isFrame: lancers[0] === QUILLES_PAR_FRAME,
+        throws,
+        frameScore,
+        isStrike: throws[0] === PINS_PER_FRAME,
         isSpare:
-          lancers.reduce((sum, quilles) => sum + quilles, 0) ===
-            QUILLES_PAR_FRAME && lancers[0] !== QUILLES_PAR_FRAME,
+          throws.reduce((sum, pins) => sum + pins, 0) === PINS_PER_FRAME &&
+          throws[0] !== PINS_PER_FRAME,
       };
     });
 
-    const estPartieParfaite =
-      strikesConsecutifs === TOTAL_FRAMES && scoreTotal === 300;
-
-    const partie = new Game({
+    const game = new Game({
       playerName,
-      frames: framesCalcules,
-      scoreTotal,
+      frames: calculatedFrames,
+      totalScore,
       date: new Date(),
     });
 
-    await partie.save();
+    await game.save();
 
     res.json({
-      partie,
-      scoreTotal,
-      frames: framesCalcules,
-      estPartieParfaite,
+      game,
+      totalScore,
+      frames: calculatedFrames,
+      isPerfectGame: false,
     });
   } catch (error: any) {
     res.status(500).json({
@@ -149,14 +158,13 @@ export const calculerScore = async (
     });
   }
 };
-
 export const getGameHistory = async (
   req: Request,
   res: Response
 ): Promise<void> => {
   try {
-    const parties = await Game.find().sort({ date: -1 }).limit(10);
-    res.json(parties);
+    const games = await Game.find().sort({ date: -1 }).limit(10);
+    res.json(games);
   } catch (error: any) {
     res.status(500).json({
       message: "Erreur lors de la récupération de l'historique",
