@@ -22,6 +22,7 @@ cd Bowling-back
 Install dependencies:
 
 npm install --legacy-peer-deps
+
 Set up the environment:
 
 Copy the example environment file:
@@ -49,8 +50,11 @@ Payload Example:
     [10, 1, 1]
   ]
 }
+
 Score History
+
 Endpoint:
+
 GET /api/scores/historique
 
 🎯 Scoring Logic
@@ -84,16 +88,19 @@ interface Frame {
 Start in Development Mode:
 
 npm run dev
+
 Run Tests:
 
 npm run test
+
 Build for Production:
 
 npm run build
+
 Start in Production Mode:
 
-bash
 npm start
+
 🧪 Tests
 
 Unit tests for scoring logic.
