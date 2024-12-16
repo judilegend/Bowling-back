@@ -1,60 +1,69 @@
 🎳 Bowling Game Backend
-🏆 API de Calcul de Score
-Service backend robuste pour le calcul précis et complexe des scores de bowling.
+A robust backend API for precise and complex bowling score calculations.
 
-✨ Fonctionnalités Principales
-🌀 Gestion des Strikes : Support des règles avancées pour les strikes (15 quilles).
-➕ Calcul des Bonus Cumulatifs : Ajout automatique des points bonus pour les strikes et spares.
-📜 Validation des Règles Officielles : Conforme aux standards du bowling.
-🌟 Détection des Parties Parfaites : Reconnaissance automatique des scores de 300 points.
-💾 Persistance des Scores : Sauvegarde et gestion des historiques.
-🚀 Technologies Utilisées
+✨ Key Features
+🌀 Strike Handling: Advanced rules support for strikes (up to 15 pins).
+➕ Cumulative Bonus Calculation: Automatic bonus point addition for strikes and spares.
+📜 Official Rule Validation: Complies with bowling standards.
+🌟 Perfect Game Detection: Automatic recognition of perfect scores (300 points).
+💾 Score Persistence: Saves and manages score history.
+
+🚀 Technologies
 Node.js
 Express
 MongoDB
 TypeScript
 Jest
 📦 Installation
-Cloner le dépôt :
+Clone the repository:
 
-git clone https://github.com/judilegend/Bowlign-back.git
-cd Bowling-back  
-Installer les dépendances :
+git clone https://github.com/judilegend/Bowling-back.git  
+cd Bowling-back
+Install dependencies:
 
-npm install  
-Configurer l'environnement :
+npm install --legacy-peer-deps
+Set up the environment:
 
-Copier l'exemple de fichier d'environnement :
+Copy the example environment file:
 
+cp .env.example .env
+Edit the .env file with your MongoDB credentials.
+Start the server in development mode:
 
-cp .env.example .env  
-Modifier le fichier .env avec vos propres paramètres MongoDB.
-Démarrer le serveur en mode développement :
+npm run dev
 
+📚 API Endpoints
 
-npm run dev  
-📚 Points d'API
-1. Calcul de Score
-Endpoint : POST /api/scores/calcul
-Exemple de Payload :
-
+Score Calculation
+Endpoint:
+POST /api/scores/calcul
+Payload Example:
 
 {
   "playerName": "John Doe",
-  "frames": [[10 , 4 , 1 ], [7, 3, 2], [9, 0 , 1], [10 ,0, 5], , [10, 10, 10]]
+  "frames": [
+    [10, 4, 1],
+    [7, 3, 2],
+    [9, 0, 1],
+    [10, 0, 5],
+    [10, 1, 1]
+  ]
 }
+Score History
+Endpoint:
+GET /api/scores/historique
 
-2. Historique des Scores
-Endpoint : GET /api/scores/historique
-🎯 Logique de Scoring
-Validation des Lancers : Vérifie les entrées pour chaque frame.
-Calcul des Bonus : Gère les bonus pour strikes et spares.
-Gestion de la Dernière Frame : Support des règles spécifiques à la 10e frame.
-Détection des Parties Parfaites : Identifie les scores parfaits (300 points).
-Score Cumulatif en Temps Réel : Mise à jour dynamique après chaque lancer.
+🎯 Scoring Logic
+Throw Validation: Ensures valid inputs for each frame.
+Bonus Calculation: Handles bonuses for strikes and spares.
+Last Frame Rules: Special handling for the 10th frame.
+Perfect Game Detection: Recognizes perfect scores (300 points).
+Real-Time Cumulative Scoring: Dynamically updates scores after each throw.
 
-🗃️ Modèle de Données
+🗃️ Data Models
 
+Game
+typescript
 
 interface Game {
   playerName: string;
@@ -62,6 +71,8 @@ interface Game {
   totalScore: number;
   date: Date;
 }
+Frame
+typescript
 
 interface Frame {
   throws: number[];
@@ -69,45 +80,54 @@ interface Frame {
   isStrike: boolean;
   isSpare: boolean;
 }
-🔄 Scripts Disponibles
+🔄 Available Scripts
+Start in Development Mode:
 
-Démarrage en mode développement :
+npm run dev
+Run Tests:
 
-npm run dev  
-Tests :
+npm run test
+Build for Production:
 
-npm run test  
-Build :
+npm run build
+Start in Production Mode:
 
-npm run build  
-Démarrage en production :
-
-npm start  
+bash
+npm start
 🧪 Tests
-Tests unitaires pour la logique de calcul des scores.
-Tests d'intégration pour les endpoints API.
-Scénarios pour valider les règles officielles, y compris les parties parfaites.
-📊 Performance
-Mise en cache MongoDB pour des réponses rapides.
-Optimisation des algorithmes de calcul.
-Gestion asynchrone des validations et des erreurs.
-🔐 Sécurité
-Validation des Entrées : Contrôle strict des données reçues par l'API.
-Sanitization : Nettoyage des données pour prévenir les vulnérabilités.
-Rate Limiting : Protection contre les abus d'API.
-Gestion des Erreurs : Messages d'erreur clairs et sécurisés.
-📝 Documentation API
-La documentation Swagger est disponible à l’adresse suivante : /api-docs.
-🛠️ Outils de Développement
-ESLint : Pour le linting du code.
-Prettier : Pour le formatage automatique.
-Nodemon : Pour le rechargement à chaud en développement.
-TypeScript : Typage statique pour un code robuste.
-Jest : Framework de tests.
-📈 Monitoring
-Logs Structurés : Suivi des requêtes et des erreurs.
-Métriques de Performance : Surveillance en temps réel.
-Alertes : Notifications en cas d’incidents.
-📝 Licence
-Ce projet est sous licence MIT.
 
+Unit tests for scoring logic.
+Integration tests for API endpoints.
+Scenarios validating official rules, including perfect games.
+
+📊 Performance
+MongoDB Caching: Ensures fast responses.
+Optimized Algorithms: Improves calculation efficiency.
+Asynchronous Validation: Handles validations and errors efficiently.
+
+🔐 Security
+
+Input Validation: Strict checks on incoming API data.
+Data Sanitization: Prevents security vulnerabilities.
+Rate Limiting: Protects against API abuse.
+Error Handling: Secure and clear error messages.
+
+📝 API Documentation
+
+Swagger documentation available at:
+/api-docs
+🛠️ Development Tools
+ESLint: Code linting.
+Prettier: Automatic formatting.
+Nodemon: Hot reloading during development.
+TypeScript: Static typing for robust code.
+Jest: Testing framework.
+
+📈 Monitoring
+
+Structured Logs: Tracks requests and errors.
+Performance Metrics: Monitors real-time performance.
+Alerts: Notifies about system incidents.
+
+📝 License
+This project is licensed under the MIT License.
