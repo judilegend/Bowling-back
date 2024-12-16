@@ -37,7 +37,9 @@ npm run dev
 
 Score Calculation
 Endpoint:
+
 POST /api/scores/calcul
+
 Payload Example:
 
 {
